@@ -6,9 +6,9 @@ This folder contains the curated dataset of Yemeni proverbs paired with expert e
 
 ## Files
 
-- **Train_data.csv** → 2125 samples (used for training and few-shot exemplars)
-- **Validation_data.csv** → 455 samples (used for validation during fine-tuning)
-- **Test_data.csv** → 456 samples (held-out evaluation set)
+- **Train_data.csv** → 333 samples (used for training and few-shot exemplars)
+- **Validation_data.csv** → 100 samples (used for validation during fine-tuning)
+- **Test_data.csv** → 100 samples (held-out evaluation set)
 
 ---
 
