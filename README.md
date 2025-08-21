@@ -1,141 +1,100 @@
-# Yemeni Proverbs Benchmark
+# Yemeni Proverbs Benchmark (Improved)
 
-A reproducible benchmark for **explaining Yemeni Arabic proverbs**, providing:
-- A curated dataset split into **train / validation / test**.
-- Scripts for **Zero-shot** and **Few-shot** evaluation across **7 models**.
-- A **Fine-tuning** pipeline (single model) with evaluation on the test set.
-
----
+This repository contains a benchmark and tooling for explaining Yemeni Arabic
+proverbs with large language models.  It includes the original dataset,
+zero‑/few‑shot evaluation scripts for several frontier and open‑source models,
+and a fine‑tuning pipeline.  The present version fixes a number of issues in
+the upstream repository and clarifies installation and usage requirements.
 
 ## Repository Structure
 
 ```
-Yemeni-Proverbs-Benchmark/
-│
-├── data/
-│   ├── Train_data.csv          # 333 samples
-│   ├── Validation_data.csv     # 100 samples
-│   └── Test_data.csv           # 100 samples
-│
-├── zero_few_shot/              # 7 model drivers (Zero/Few-shot)
-│   ├── common.py
-│   ├── gpt4o.py
-│   ├── gemini.py
-│   ├── allam7b.py
-│   ├── llama3_8b.py
-│   ├── mistral7b.py
-│   ├── deepseek7b.py
-│   └── jais13b.py
-│
-├── fine_tuning/                # single-model fine-tuning
-│   ├── train.py
-│   └── evaluate.py
-│
-├── results/
-│   ├── zero_few.csv
-│   ├── finetune.csv
-│   └── figures/
-│
-├── requirements.txt
-└── README.md
+Yemeni‑Proverbs‑Benchmark/
+├── data/                  # Train/validation/test splits (CSV)
+├── zero_few_shot/         # drivers for zero‑/few‑shot evaluation
+│   ├── common.py          # shared helpers for loading data and building prompts
+│   ├── gpt4o.py           # OpenAI GPT‑4o client
+│   ├── gemini.py          # Google Gemini client
+│   ├── allam7b.py         # ALLaM‑7B client
+│   ├── llama3_8b.py       # LLaMA‑3‑8B client
+│   ├── mistral7b.py       # Mistral‑7B client
+│   ├── deepseek7b.py      # DeepSeek‑7B Chat client
+│   └── jais13b.py         # Jais chat client
+├── fine_tuning/
+│   ├── train.py           # single‑model fine‑tuning script
+│   └── evaluate.py        # inference for fine‑tuned models
+├── results/               # will contain generated results
+├── requirements.txt       # dependencies
+└── README.md              # this file
 ```
 
----
+### Data Format
 
-## Data Format
+Each CSV in `data/` must contain at least a column for the proverb text.  The
+default name for this column is `proverb`, but the loader will accept
+`proverbs` (capitalized or lower‑case) and map it to the expected name.  If
+reference explanations are available, place them in a column named
+`reference_explanation` or simply `explanation` – these will be aliased
+automatically when loading.
 
-Each CSV contains the following columns:
-- `Proverbs`: Yemeni proverb text
-- `Explanation`: Expert explanation in Modern Standard Arabic
-
-> Replace/rename columns in code if your field names differ.
-
----
-
-## Installation
+### Installation
 
 ```bash
-git clone https://github.com/<anonymous>/Yemeni-Proverbs-Benchmark.git
-cd Yemeni-Proverbs-Benchmark
+git clone <this repository>
+cd Yemeni‑Proverbs‑Benchmark
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
----
+Several of the drivers require API keys.  Set the following environment
+variables as needed before running any scripts:
 
-## Zero-shot / Few-shot
+* **`OPENAI_API_KEY`** – required for the GPT‑4o driver.
+* **`GEMINI_API_KEY`** or **`GOOGLE_API_KEY`** – required for the Gemini driver.
+* **`HF_TOKEN`** – optional Hugging Face access token for gated models like
+  ALLaM, LLaMA‑3‑8B, Mistral‑7B, DeepSeek 7B and Jais.  If a model is gated,
+  you must set this token or the driver will raise an error during model load.
 
-Each model has a driver under `zero_few_shot/` and accepts:
-- `--mode` ∈ {`zero`, `few`}
-- `--shots` (for few-shot; default 5)
-- `--train` (path to Train_data.csv when using few-shot)
-- `--test` (path to Test_data.csv)
+### Zero‑/Few‑Shot Usage
 
-**Example (LLAMA-3-8B):**
+Each model has a corresponding driver in `zero_few_shot/`.  These drivers
+accept the following arguments:
+
+* `--mode` – either `zero` for zero‑shot evaluation or `few` for few‑shot.
+* `--shots` – number of few‑shot examples to include (default 5; ignored in
+  zero‑shot mode).
+* `--train` – path to `Train_data.csv` when using few‑shot mode.
+* `--test` – path to the test CSV.
+
+Example (LLaMA‑3‑8B):
+
 ```bash
 python zero_few_shot/llama3_8b.py --mode zero --test data/Test_data.csv
-python zero_few_shot/llama3_8b.py --mode few  --shots 5 --train data/Train_data.csv --test data/Test_data.csv
+python zero_few_shot/llama3_8b.py --mode few --shots 5 --train data/Train_data.csv --test data/Test_data.csv
 ```
 
-Other drivers:
-```bash
-python zero_few_shot/gpt4o.py      --mode zero ...
-python zero_few_shot/gemini.py     --mode few  --shots 5 ...
-python zero_few_shot/allam7b.py    --mode zero ...
-python zero_few_shot/mistral7b.py  --mode few  --shots 5 ...
-python zero_few_shot/deepseek7b.py --mode zero ...
-python zero_few_shot/jais13b.py    --mode few  --shots 5 ...
-```
+### Fine‑Tuning Usage
 
----
+The fine‑tuning pipeline trains a single decoder‑only model using a unified
+English instruction prompt; the model must answer in Modern Standard Arabic.
 
-## Fine-tuning (single model)
-
-Typical workflow:
 ```bash
 # Train
-python fine_tuning/train.py --config configs/finetune/model.json
+python fine_tuning/train.py --model_id ALLaM-AI/ALLaM-7B-Instruct-preview \
+    --data_dir data --output_dir results/finetune_allam --lr 2e-5 --epochs 3 --bsz 2 \
+    --grad_accum 8 --cutoff_len 1024 --fp16
 
-# Evaluate best checkpoint on test
+# Evaluate on test set
 python fine_tuning/evaluate.py \
-  --checkpoint experiments/finetune/model/checkpoints/best \
-  --test data/Test_data.csv \
-  --out results/finetune.csv
+    --base_id ALLaM-AI/ALLaM-7B-Instruct-preview \
+    --adapter_dir results/finetune_allam \
+    --test_path data/Test_data.csv \
+    --out_path results/finetune.csv
 ```
 
----
+### Notes
 
-## Evaluation Metrics
-
-This benchmark reports **automatic metrics** aligned with Arabic text generation evaluation:
-
-- **Cosine Similarity** (sentence embeddings)
-- **BERTScore (F1)**
-- **Semantic Answer Similarity (SAS)**
-
----
-
-## Citation
-
-```bibtex
-@misc{yemeni_proverbs_benchmark_2025,
-  title        = {Yemeni Proverbs Benchmark},
-  author       = {Anonymous},
-  year         = {2025},
-  url          = {https://github.com/anonymous/Yemeni-Proverbs-Benchmark},
-  note         = {Version 0.1}
-}
-```
-
----
-
-## License
-
-- **Code**: MIT (or Apache-2.0)
-- **Data**: CC BY 4.0
-
----
-
-## Notes
-
-- This repository intentionally anonymizes authors and affiliations for review.
-- Model names are retained for transparency of experimental settings.
+This repository is provided under the MIT license for the code and CC‑BY 4.0
+for the data.  Please ensure you have permission to use any third‑party
+models accessed through the Hugging Face Hub or other providers.
