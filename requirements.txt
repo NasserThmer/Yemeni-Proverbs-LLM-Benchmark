@@ -15,3 +15,10 @@ torch>=2.0.0
 
 # Optional: scikit-learn for additional analysis
 scikit-learn
+
+# Additional dependencies for drivers and fine-tuning
+openai  # required for GPT-4o driver
+google-generativeai  # required for Gemini driver
+huggingface-hub>=0.15.1  # required for Allam/LLaMA/Mistral/DeepSeek/Jais drivers
+datasets>=2.15.0  # used in fine-tuning script
+peft>=0.10.0  # used for PEFT adapters in evaluation
