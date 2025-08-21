@@ -10,7 +10,7 @@ This folder stores experiment outputs and optional figures.
 
 1) Run each driver once to produce a temporary CSV (examples; adjust keys/tokens as needed):
 ```bash
-python -m zero_few_shot.run --model gpt4o     --input data/Test_data.csv --output tmp_gpt4o.csv     --k 3 --temp 0.2 --max_new_tokens 256
+python -m zero_few_shot.run --model gpt4o     --input data/Test_data.csv --output tmp_gpt4o.csv     --k 3 --temp 0.2 --max_new_tokens 64
 python -m zero_few_shot.run --model gemini    --input data/Test_data.csv --output tmp_gemini.csv    --k 3
 python -m zero_few_shot.run --model allam7b   --input data/Test_data.csv --output tmp_allam.csv     --k 2
 python -m zero_few_shot.run --model llama3_8b --input data/Test_data.csv --output tmp_llama3.csv    --k 2
