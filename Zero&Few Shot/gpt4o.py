@@ -49,7 +49,7 @@ class GPT4oClient:
         df: pd.DataFrame,
         examples: Iterable[FewShotExample] | None = None,
         temperature: float = 0.0,
-        max_tokens: int = 256,
+        max_tokens: int = 64,
     ) -> List[dict]:
         """Generate explanations for a DataFrame of proverbs.
 
