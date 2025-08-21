@@ -1,0 +1,148 @@
+# Yemeni Proverbs Benchmark
+
+A reproducible benchmark for **explaining Yemeni Arabic proverbs**, providing:
+- A curated dataset split into **train / validation / test**.
+- Scripts for **Zero-shot** and **Few-shot** evaluation across **7 models**.
+- A **Fine-tuning** pipeline (single model) with evaluation on the test set.
+
+---
+
+## Repository Structure
+
+```
+Yemeni-Proverbs-Benchmark/
+│
+├── data/
+│   ├── Train_data.csv          # 333 samples
+│   ├── Validation_data.csv     # 100 samples
+│   └── Test_data.csv           # 100 samples
+│
+├── zero_few_shot/              # 7 model drivers (Zero/Few-shot)
+│   ├── common.py
+│   ├── gpt4o.py
+│   ├── gemini.py
+│   ├── allam7b.py
+│   ├── llama3_8b.py
+│   ├── mistral7b.py
+│   ├── deepseek7b.py
+│   └── jais13b.py
+│
+├── fine_tuning/                # single-model fine-tuning
+│   ├── train.py
+│   └── evaluate.py
+│
+├── results/
+│   ├── zero_few.csv
+│   ├── finetune.csv
+│   └── figures/
+│
+├── requirements.txt
+└── README.md
+```
+
+---
+
+## Data Format
+
+Each CSV contains the following columns:
+- `Proverbs`: Yemeni proverb text
+- `Explanation`: Expert explanation in Modern Standard Arabic
+
+> Replace/rename columns in code if your field names differ.
+
+---
+
+## Installation
+
+```bash
+git clone https://github.com/<anonymous>/Yemeni-Proverbs-Benchmark.git
+cd Yemeni-Proverbs-Benchmark
+pip install -r requirements.txt
+```
+
+---
+
+## Zero-shot / Few-shot
+
+Each model has a driver under `zero_few_shot/` and accepts:
+- `--mode` ∈ {`zero`, `few`}
+- `--shots` (for few-shot; default 5)
+- `--train` (path to Train_data.csv when using few-shot)
+- `--test` (path to Test_data.csv)
+
+**Example (LLAMA-3-8B):**
+```bash
+python zero_few_shot/llama3_8b.py --mode zero --test data/Test_data.csv
+python zero_few_shot/llama3_8b.py --mode few  --shots 5 --train data/Train_data.csv --test data/Test_data.csv
+```
+
+Other drivers:
+```bash
+python zero_few_shot/gpt4o.py      --mode zero ...
+python zero_few_shot/gemini.py     --mode few  --shots 5 ...
+python zero_few_shot/allam7b.py    --mode zero ...
+python zero_few_shot/mistral7b.py  --mode few  --shots 5 ...
+python zero_few_shot/deepseek7b.py --mode zero ...
+python zero_few_shot/jais13b.py    --mode few  --shots 5 ...
+```
+
+---
+
+## Fine-tuning (single model)
+
+Typical workflow:
+```bash
+# Train
+python fine_tuning/train.py --config configs/finetune/model.json
+
+# Evaluate best checkpoint on test
+python fine_tuning/evaluate.py \
+  --checkpoint experiments/finetune/model/checkpoints/best \
+  --test data/Test_data.csv \
+  --out results/finetune.csv
+```
+
+---
+
+## Evaluation Metrics
+
+This benchmark reports **automatic metrics** aligned with Arabic text generation evaluation:
+
+- **Cosine Similarity** (sentence embeddings)
+- **BERTScore (F1)**
+- **Semantic Answer Similarity (SAS)**
+
+Per-example scores and macro averages are saved under `results/`. Ensure both Zero/Few-shot and Fine-tuning use the **same metric functions** for fair comparison.
+
+> Example previously observed scores (baseline):
+> - Cosine similarity ≈ 0.6986
+> - BERTScore (F1) ≈ 0.6819
+> - SAS ≈ 0.3634
+
+---
+
+## Citation
+
+```bibtex
+@misc{yemeni_proverbs_benchmark_2025,
+  title        = {Yemeni Proverbs Benchmark},
+  author       = {Anonymous},
+  year         = {2025},
+  url          = {https://github.com/anonymous/Yemeni-Proverbs-Benchmark},
+  note         = {Version 0.1}
+}
+```
+
+---
+
+## License
+
+- **Code**: MIT (or Apache-2.0)
+- **Data**: CC BY 4.0
+
+---
+
+## Notes
+
+- This repository intentionally anonymizes authors and affiliations for review.
+- Model names are retained for transparency of experimental settings.
