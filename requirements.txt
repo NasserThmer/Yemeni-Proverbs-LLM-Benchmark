@@ -1,0 +1,17 @@
+# Core dependencies
+pandas
+numpy
+tqdm
+
+# HuggingFace Transformers + SentenceTransformers
+transformers>=4.30.0
+sentence-transformers>=2.2.2
+
+# Metrics
+bert-score>=0.3.13
+
+# Torch (CPU/GPU depending on environment)
+torch>=2.0.0
+
+# Optional: scikit-learn for additional analysis
+scikit-learn
