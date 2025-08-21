@@ -112,13 +112,6 @@ This benchmark reports **automatic metrics** aligned with Arabic text generation
 - **BERTScore (F1)**
 - **Semantic Answer Similarity (SAS)**
 
-Per-example scores and macro averages are saved under `results/`. Ensure both Zero/Few-shot and Fine-tuning use the **same metric functions** for fair comparison.
-
-> Example previously observed scores (baseline):
-> - Cosine similarity ≈ 0.6986
-> - BERTScore (F1) ≈ 0.6819
-> - SAS ≈ 0.3634
-
 ---
 
 ## Citation
